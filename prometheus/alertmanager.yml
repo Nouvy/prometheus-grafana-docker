@@ -1,8 +1,9 @@
 global:
-  smtp_smarthost: "smtp.example.com:587"
-  smtp_from: "alertmanager@example.com"
-  smtp_auth_username: "alertmanager@example.com"
-  smtp_auth_password: "MotDePasseSMTP"
+  smtp_smarthost: "in-v3.mailjet.com:587"
+  smtp_from: "alertes@example.com"          # Expéditeur vérifié dans Mailjet
+  smtp_auth_username: "MAILJET_API_KEY"     # API Key Mailjet
+  smtp_auth_password: "MAILJET_SECRET_KEY"  # Secret Key Mailjet
+  smtp_require_tls: true
 
 route:
   group_by: ["alertname", "instance"]
@@ -18,13 +19,17 @@ route:
 receivers:
   - name: "equipe-si"
     email_configs:
-      - to: "si@example.com"
+      - to: "si@example.com"               # Destinataire alertes warning
         send_resolved: true
+        headers:
+          Subject: "[SUPERVISION] {{ .GroupLabels.alertname }} — {{ .Status | toUpper }}"
 
   - name: "equipe-si-critical"
     email_configs:
-      - to: "si-urgent@example.com"
+      - to: "si-urgent@example.com"        # Destinataire alertes critiques
         send_resolved: true
+        headers:
+          Subject: "[CRITIQUE] {{ .GroupLabels.alertname }} — {{ .Status | toUpper }}"
 
 inhibit_rules:
   - source_match:
