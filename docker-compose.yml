@@ -80,6 +80,24 @@ services:
     volumes:
       - ./snmp-exporter/snmp.yml:/etc/snmp_exporter/snmp.yml
 
+  # ── Grafana Init — patch ${DS_PROMETHEUS} dans tous les dashboards ───────────
+  grafana-init:
+    image: python:3.12-alpine
+    container_name: grafana-init
+    restart: "no"
+    networks:
+      - supervision
+    volumes:
+      - ./scripts/patch_dashboards.py:/patch_dashboards.py:ro
+    environment:
+      - GRAFANA_URL=http://grafana:3000
+      - GF_ADMIN_USER=admin
+      - GF_ADMIN_PASSWORD=admin123
+      - DS_UID=prometheus
+    entrypoint: ["python3", "/patch_dashboards.py"]
+    depends_on:
+      - grafana
+
   # ── cAdvisor (conteneurs Docker) ──────────────────────────────────────────────
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
