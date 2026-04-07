@@ -44,6 +44,9 @@ services:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin123
       - GF_USERS_ALLOW_SIGN_UP=false
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     depends_on:
       - prometheus
 
