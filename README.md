@@ -9,14 +9,14 @@ docker compose up -d
 | Service | URL | Accès |
 |---------|-----|-------|
 | Grafana | http://localhost:3000 | admin / admin123 |
-| Prometheus | http://localhost:9090 | — |
-| Alertmanager | http://localhost:9093 | — |
-| cAdvisor | http://localhost:8080 | — |
+| Prometheus | non exposé — accès via Grafana | — |
+| Alertmanager | non exposé — accès via Grafana | — |
+| cAdvisor | non exposé — accès via Grafana | — |
 
 ## Structure
 
 ```
-supervision/
+prometheus-grafana-docker/
 ├── docker-compose.yml
 ├── prometheus/
 │   ├── prometheus.yml          ← Cibles de scrape
@@ -25,12 +25,32 @@ supervision/
 │       └── alerts.yml          ← Règles d'alertes
 ├── grafana/
 │   └── provisioning/
-│       ├── datasources/        ← Prometheus auto-configuré
+│       ├── datasources/        ← Prometheus auto-configuré (uid: prometheus)
 │       └── dashboards/
 ├── blackbox/
 │   └── blackbox.yml            ← Sondes HTTP/TCP/ICMP/DNS
-└── snmp-exporter/
-    └── snmp.yml                ← Config équipements réseau SNMP
+├── snmp-exporter/
+│   └── snmp.yml                ← Config équipements réseau SNMP
+└── scripts/
+    └── patch_dashboards.py     ← Patch automatique des dashboards importés
+```
+
+## Patch automatique des dashboards — ${DS_PROMETHEUS}
+
+Certains dashboards communautaires (ex: Windows Exporter, Node Exporter) utilisent
+`${DS_PROMETHEUS}` comme référence à la datasource. Sans correction, Grafana affiche
+`Datasource ${DS_PROMETHEUS} was not found`.
+
+Le service `grafana-init` corrige automatiquement ce problème au démarrage :
+il parcourt tous les dashboards importés et remplace `${DS_PROMETHEUS}` par l'UID
+réel de la datasource (`prometheus`).
+
+```bash
+# S'exécute automatiquement au démarrage
+docker compose up -d
+
+# Après avoir importé un nouveau dashboard manuellement
+docker compose run --rm grafana-init
 ```
 
 ## Agents à installer sur les machines supervisées
