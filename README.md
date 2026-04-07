@@ -76,7 +76,7 @@ msiexec /i windows_exporter-x.x.x-amd64.msi ENABLED_COLLECTORS="cpu,cs,logical_d
 | ID | Dashboard |
 |----|-----------|
 | 1860 | Node Exporter Full (Linux/macOS) |
-| 10467 | Windows Exporter |
+| 14694 | Windows Exporter (EN) |
 | 7249 | SNMP Exporter |
 | 13659 | Blackbox Exporter |
 | 193 | Docker & cAdvisor |
