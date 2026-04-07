@@ -17,8 +17,7 @@ services:
     restart: unless-stopped
     networks:
       - supervision
-    ports:
-      - "9090:9090"
+    # Port non exposé — accessible uniquement via Grafana (http://prometheus:9090)
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - ./prometheus/rules:/etc/prometheus/rules
@@ -55,8 +54,7 @@ services:
     restart: unless-stopped
     networks:
       - supervision
-    ports:
-      - "9093:9093"
+    # Port non exposé — accessible depuis Grafana (Connections > Alertmanager > http://alertmanager:9093)
     volumes:
       - ./prometheus/alertmanager.yml:/etc/alertmanager/alertmanager.yml
 
@@ -67,8 +65,7 @@ services:
     restart: unless-stopped
     networks:
       - supervision
-    ports:
-      - "9115:9115"
+    # Port non exposé — scrapé par Prometheus en interne
     volumes:
       - ./blackbox/blackbox.yml:/etc/blackbox_exporter/config.yml
 
@@ -79,8 +76,7 @@ services:
     restart: unless-stopped
     networks:
       - supervision
-    ports:
-      - "9116:9116"
+    # Port non exposé — scrapé par Prometheus en interne
     volumes:
       - ./snmp-exporter/snmp.yml:/etc/snmp_exporter/snmp.yml
 
@@ -91,8 +87,7 @@ services:
     restart: unless-stopped
     networks:
       - supervision
-    ports:
-      - "8080:8080"
+    # Port non exposé — scrapé par Prometheus, visualisé dans Grafana (dashboard ID 193)
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:ro
