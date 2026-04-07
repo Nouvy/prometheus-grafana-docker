@@ -77,9 +77,10 @@ msiexec /i windows_exporter-x.x.x-amd64.msi ENABLED_COLLECTORS="cpu,cs,logical_d
 |----|-----------|
 | 1860 | Node Exporter Full (Linux/macOS) |
 | 14694 | Windows Exporter (EN) |
-| 7249 | SNMP Exporter |
+| 11168 | SNMP Exporter — Interfaces réseau |
 | 13659 | Blackbox Exporter |
 | 193 | Docker & cAdvisor |
+| 7249 | Kubernetes Cluster Monitoring |
 
 ## Recharger la config Prometheus sans redémarrage
 
