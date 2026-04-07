@@ -58,7 +58,7 @@ docker compose run --rm grafana-init
 ### Linux / macOS — node_exporter (port 9100)
 ```bash
 # Linux
-wget https://github.com/prometheus/node_exporter/releases/latest/download/node_exporter-1.8.2.linux-amd64.tar.gz
+wget https://github.com/prometheus/node_exporter/releases/latest/download/node_exporter-1.11.0.linux-amd64.tar.gz
 tar xvf node_exporter-*.tar.gz && sudo cp node_exporter-*/node_exporter /usr/local/bin/
 
 # macOS
