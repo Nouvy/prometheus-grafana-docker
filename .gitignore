@@ -1,0 +1,7 @@
+# Données persistantes (volumes montés localement si besoin)
+prometheus_data/
+grafana_data/
+
+# Fichiers sensibles
+*.env
+.env

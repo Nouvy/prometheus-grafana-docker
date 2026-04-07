@@ -1,0 +1,100 @@
+groups:
+  - name: infrastructure
+    rules:
+
+      # ── Disponibilité ──────────────────────────────────────────────────────────
+
+      - alert: HôteIndisponible
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Hôte indisponible : {{ $labels.instance }}"
+          description: "L'exporter {{ $labels.job }} ne répond plus depuis 1 min."
+
+      - alert: ServiceHTTPDown
+        expr: probe_success{job="blackbox_http"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service HTTP indisponible : {{ $labels.instance }}"
+          description: "Le service ne répond pas depuis 2 min."
+
+      # ── CPU ────────────────────────────────────────────────────────────────────
+
+      - alert: CPUElevéLinux
+        expr: >
+          100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "CPU élevé sur {{ $labels.instance }}"
+          description: "CPU à {{ $value | printf \"%.1f\" }}% depuis 5 min."
+
+      - alert: CPUElevéWindows
+        expr: >
+          100 - (avg by(instance) (rate(windows_cpu_time_total{mode="idle"}[5m])) * 100) > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "CPU élevé (Windows) sur {{ $labels.instance }}"
+          description: "CPU à {{ $value | printf \"%.1f\" }}% depuis 5 min."
+
+      # ── RAM ────────────────────────────────────────────────────────────────────
+
+      - alert: RAMCritiqueLinux
+        expr: >
+          (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100 < 10
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Mémoire critique sur {{ $labels.instance }}"
+          description: "Seulement {{ $value | printf \"%.1f\" }}% de RAM disponible."
+
+      - alert: RAMCritiqueWindows
+        expr: >
+          (1 - (windows_os_physical_memory_free_bytes / windows_cs_physical_memory_bytes)) * 100 > 90
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Mémoire critique (Windows) sur {{ $labels.instance }}"
+          description: "RAM utilisée à {{ $value | printf \"%.1f\" }}%."
+
+      # ── Disque ─────────────────────────────────────────────────────────────────
+
+      - alert: DisquePleinLinux
+        expr: >
+          (node_filesystem_avail_bytes{fstype!="tmpfs"} / node_filesystem_size_bytes{fstype!="tmpfs"}) * 100 < 15
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Disque presque plein sur {{ $labels.instance }}"
+          description: "Partition {{ $labels.mountpoint }} à {{ $value | printf \"%.1f\" }}% libre."
+
+      - alert: DisquePleinWindows
+        expr: >
+          (windows_logical_disk_free_bytes / windows_logical_disk_size_bytes) * 100 < 15
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Disque presque plein (Windows) sur {{ $labels.instance }}"
+          description: "Volume {{ $labels.volume }} à {{ $value | printf \"%.1f\" }}% libre."
+
+      # ── SSL ────────────────────────────────────────────────────────────────────
+
+      - alert: CertificatSSLExpire
+        expr: (probe_ssl_earliest_cert_expiry - time()) / 86400 < 30
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Certificat SSL expire bientôt : {{ $labels.instance }}"
+          description: "Expire dans {{ $value | printf \"%.0f\" }} jours."

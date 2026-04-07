@@ -1,0 +1,54 @@
+# Fichier de configuration SNMP Exporter
+# Généré manuellement pour IF-MIB (interfaces réseau)
+# Pour générer un fichier complet depuis les MIBs fabricant :
+# https://github.com/prometheus/snmp_exporter/tree/main/generator
+
+modules:
+  if_mib:
+    walk:
+      - 1.3.6.1.2.1.1          # system
+      - 1.3.6.1.2.1.2          # interfaces
+      - 1.3.6.1.2.1.31.1.1    # ifXTable
+    metrics:
+      - name: sysDescr
+        oid: 1.3.6.1.2.1.1.1.0
+        type: DisplayString
+        help: "Description du système"
+      - name: sysUpTime
+        oid: 1.3.6.1.2.1.1.3.0
+        type: gauge
+        help: "Uptime du système (centièmes de seconde)"
+      - name: ifHCInOctets
+        oid: 1.3.6.1.2.1.31.1.1.1.6
+        type: counter
+        help: "Octets reçus sur l'interface"
+        indexes:
+          - labelname: ifIndex
+            type: gauge
+        lookups:
+          - labels: [ifIndex]
+            labelname: ifName
+            oid: 1.3.6.1.2.1.31.1.1.1.1
+            type: DisplayString
+      - name: ifHCOutOctets
+        oid: 1.3.6.1.2.1.31.1.1.1.10
+        type: counter
+        help: "Octets émis sur l'interface"
+        indexes:
+          - labelname: ifIndex
+            type: gauge
+        lookups:
+          - labels: [ifIndex]
+            labelname: ifName
+            oid: 1.3.6.1.2.1.31.1.1.1.1
+            type: DisplayString
+      - name: ifOperStatus
+        oid: 1.3.6.1.2.1.2.2.1.8
+        type: gauge
+        help: "Statut opérationnel (1=up, 2=down)"
+        indexes:
+          - labelname: ifIndex
+            type: gauge
+    auth:
+      community: public   # À remplacer par votre community string
+    version: 2
