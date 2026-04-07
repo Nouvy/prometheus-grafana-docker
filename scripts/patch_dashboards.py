@@ -1,6 +1,7 @@
 """
 Patch automatique des dashboards Grafana.
-Remplace ${DS_PROMETHEUS} par l'UID réel de la datasource Prometheus.
+Remplace tous les ${DS_*} (${DS_PROMETHEUS}, ${DS_THEMIS}, etc.)
+par l'UID réel de la datasource Prometheus.
 S'exécute au démarrage de la stack via docker compose.
 """
 import urllib.request
@@ -9,12 +10,15 @@ import json
 import time
 import base64
 import os
+import re
 
-GRAFANA     = os.getenv("GRAFANA_URL",      "http://grafana:3000")
-GF_USER     = os.getenv("GF_ADMIN_USER",    "admin")
-GF_PASS     = os.getenv("GF_ADMIN_PASSWORD","admin123")
-DS_UID      = os.getenv("DS_UID",           "prometheus")
-PLACEHOLDER = "${DS_PROMETHEUS}"
+GRAFANA = os.getenv("GRAFANA_URL",       "http://grafana:3000")
+GF_USER = os.getenv("GF_ADMIN_USER",     "admin")
+GF_PASS = os.getenv("GF_ADMIN_PASSWORD", "admin123")
+DS_UID  = os.getenv("DS_UID",            "prometheus")
+
+# Correspond à n'importe quelle variable ${DS_XXXXX}
+DS_PATTERN = re.compile(r'\$\{DS_[A-Z0-9_]+\}')
 
 CREDS   = base64.b64encode(f"{GF_USER}:{GF_PASS}".encode()).decode()
 HEADERS = {"Authorization": f"Basic {CREDS}", "Content-Type": "application/json"}
@@ -45,14 +49,17 @@ print(f"Found {len(dashboards)} dashboard(s).", flush=True)
 
 patched_count = 0
 for d in dashboards:
-    uid  = d["uid"]
-    resp = api("GET", f"/api/dashboards/uid/{uid}")
-    dashboard   = resp["dashboard"]
-    serialized  = json.dumps(dashboard)
+    uid        = d["uid"]
+    resp       = api("GET", f"/api/dashboards/uid/{uid}")
+    dashboard  = resp["dashboard"]
+    serialized = json.dumps(dashboard)
 
-    if PLACEHOLDER in serialized:
-        print(f"  Patching: {d['title']} ({uid})", flush=True)
-        patched = json.loads(serialized.replace(PLACEHOLDER, DS_UID))
+    placeholders = DS_PATTERN.findall(serialized)
+    if placeholders:
+        unique = list(set(placeholders))
+        print(f"  Patching: {d['title']} ({uid}) — {unique}", flush=True)
+        patched_str = DS_PATTERN.sub(DS_UID, serialized)
+        patched = json.loads(patched_str)
         api("POST", "/api/dashboards/db", {
             "dashboard": patched,
             "overwrite": True,
